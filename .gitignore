@@ -1,0 +1,4 @@
+# local tooling
+.vscode/
+*.bak
+_scratch/

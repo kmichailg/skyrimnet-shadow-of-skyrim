@@ -1,0 +1,25 @@
+{% if render_mode == "full" or render_mode == "thoughts" or render_mode == "transform" %}
+{# Shadow of Skyrim: what the speaker knows about the player's defeats.
+   SkyrimNet has no bleedout handling of its own. Without this block a party wipe is
+   invisible: the player vanishes mid-fight and comes back somewhere else with their
+   gear gone, while every NPC carries on as though nothing had happened.
+   Shadow of Skyrim is optional, so the plugin guard keeps this file inert without it.
+   This file ADDS a block; it replaces no SkyrimNet prompt. #}
+{% if is_plugin_loaded("Shadow of Skyrim.esp") %}
+
+{% if is_knocked_down(player.UUID) %}
+**{{ player.name }} IS DOWN:**
+- {{ player.name }} has been struck down and is bleeding out on the ground right now - unable to act, unable to answer.
+- The fight is not decided yet. Whoever is still standing decides what happens next.
+{% else %}
+{% if is_quest_active("_1NemesisTrackerQuest") or is_quest_active("_2NemesisTrackerQuest") or is_quest_active("_3NemesisTrackerQuest") or is_quest_active("_4NemesisTrackerQuest") or is_quest_active("_5NemesisTrackerQuest") %}
+**{{ player.name }} WAS DEFEATED:**
+- The party lost a fight. {{ player.name }} was struck down and did not fight their way out of it.
+- What followed was not a victory. Either {{ player.name }} was dragged clear by someone and has only just come round, or they woke somewhere else entirely - however far the victor carried them.
+- Gear, gold, or both were taken. {{ player.name }} is weaker for it, and the loss is still unanswered.
+- {{ player.name }} knows this happened. Do not act as though they simply walked away from that fight, and do not invent a victory for them.
+{% endif %}
+{% endif %}
+
+{% endif %}
+{% endif %}

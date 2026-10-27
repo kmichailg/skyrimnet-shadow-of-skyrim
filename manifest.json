@@ -1,0 +1,32 @@
+{
+  "id": "kmichailg.shadow-of-skyrim-defeat",
+  "type": "bundle",
+  "title": "Shadow of Skyrim - Defeat Awareness",
+  "tagline": "When your party loses, NPCs know it. Followers stop acting as though you walked away from a fight you were carried out of.",
+  "description": "Shadow of Skyrim defeats you without killing you: you are struck down, your gear is taken, and you wake somewhere else. SkyrimNet never sees any of that. It has no bleedout handling of its own, so the defeat is invisible to dialogue - the player vanishes mid-fight and reappears with nothing, while every NPC carries on as though nothing happened, or invents a victory that never took place.\n\nThis plugin gives NPCs the one fact they were missing: the party lost. It adds a block to the speaker's own prompt that says the player was struck down, that what followed was not a win, that gear or gold was taken, and that they should not pretend otherwise or congratulate the player on a fight they lost.\n\nIt also covers the live moment: while the player is actually bleeding out on the ground, NPCs are told the fight is not yet decided and that whoever is still standing decides what happens next.\n\nThis file adds a new block and replaces no SkyrimNet prompt. It is inert unless Shadow of Skyrim is installed.",
+  "author": "kmichailg",
+  "tags": [
+    "death alternative",
+    "defeat",
+    "followers",
+    "combat",
+    "immersion"
+  ],
+  "nsfw": false,
+  "mods": [
+    {
+      "name": "Shadow of Skyrim - Nemesis and Alternative Death System",
+      "file": "Shadow of Skyrim.esp",
+      "required": true
+    }
+  ],
+  "requirements": [
+    "SkyrimNet Beta 25 (0.25.0) or newer"
+  ],
+  "languages": [
+    "en"
+  ],
+  "version": "1.0.0",
+  "changelog": "Initial release. NPCs are told when the player has been struck down and is bleeding out, and when the party has lost a fight outright - so followers stop acting as though the player walked away from a defeat, and stop inventing a victory for them.",
+  "min_skyrimnet_version": "0.25.0"
+}
