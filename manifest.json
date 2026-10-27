@@ -2,8 +2,8 @@
   "id": "kmichailg.shadow-of-skyrim-defeat",
   "type": "bundle",
   "title": "Shadow of Skyrim - Defeat Awareness",
-  "tagline": "When your party loses, NPCs know it. Followers stop acting as though you walked away from a fight you were carried out of.",
-  "description": "Shadow of Skyrim defeats you without killing you: you are struck down, your gear is taken, and you wake somewhere else. SkyrimNet never sees any of that. It has no bleedout handling of its own, so the defeat is invisible to dialogue - the player vanishes mid-fight and reappears with nothing, while every NPC carries on as though nothing happened, or invents a victory that never took place.\n\nThis plugin gives NPCs the one fact they were missing: the party lost. It adds a block to the speaker's own prompt that says the player was struck down, that what followed was not a win, that gear or gold was taken, and that they should not pretend otherwise or congratulate the player on a fight they lost.\n\nIt also covers the live moment: while the player is actually bleeding out on the ground, NPCs are told the fight is not yet decided and that whoever is still standing decides what happens next.\n\nThis file adds a new block and replaces no SkyrimNet prompt. It is inert unless Shadow of Skyrim is installed.",
+  "tagline": "After Shadow of Skyrim defeats you, NPCs know you did not win, that you woke somewhere else, and that your gear may be gone.",
+  "description": "Shadow of Skyrim defeats you without killing you: you are struck down, your gear may be taken, and you wake somewhere else. SkyrimNet records the death itself, and Battle Summaries narrates the fight, but neither says what Shadow of Skyrim did next - that the player is on their feet again somewhere else, and did not fight their way out.\n\nThis plugin adds the one fact they were missing. It reads the player's persisted death event from SkyrimNet's own event history and, within the last six game hours, tells the speaker that the player was struck down and lost, that they woke somewhere other than where they fell, and that a nemesis may be carrying what it took. It also covers the live moment: while the player is actually bleeding out on the ground, NPCs are told the fight is not yet decided.\n\nIt deliberately does not use Shadow of Skyrim's nemesis tracker quests as its signal. Those are started only when a nemesis is assigned, and most defeats assign none - a real solo defeat by two wolves started zero of them. A death event is written for every defeat and survives the respawn.\n\nThis file adds a new block and replaces no SkyrimNet prompt. It is inert unless Shadow of Skyrim is installed.",
   "author": "kmichailg",
   "tags": [
     "death alternative",
@@ -26,7 +26,7 @@
   "languages": [
     "en"
   ],
-  "version": "1.0.1",
-  "changelog": "Detect a recorded defeat from the nemesis tracker quest's stage as well as its active flag, so the block still renders when the quest is not in the player's journal.",
+  "version": "1.0.2",
+  "changelog": "Detect the defeat from the player's persisted death event in event history instead of the nemesis tracker quests. The trackers are started only when a nemesis is assigned, so most defeats - including a solo defeat by two wolves - rendered nothing at all. Wording no longer assumes a party was present.",
   "min_skyrimnet_version": "0.25.0"
 }

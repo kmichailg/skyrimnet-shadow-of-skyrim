@@ -102,6 +102,14 @@ nothing more.
 
 ### 3.3 `is_quest_active("_<n>NemesisTrackerQuest")`
 
+> **DISPROVEN IN GAME (2026-10-28).** This section's premise is wrong and the shipped
+> signal has been replaced. A real solo defeat - the player struck down by two wolves with
+> no party present - started **0 of 5** nemesis tracker quests and **0 of 5** gear tracker
+> quests. Nemesis assignment is conditional; most defeats assign no nemesis, so the trackers
+> never start and this signal renders nothing in the common case. The tracker quests are
+> started by script only when a nemesis is assigned, which is a minority of defeats.
+> See section 3.6 for the signal that replaced it.
+
 SOS keeps five nemesis slots as `_1NemesisTrackerQuest` … `_5NemesisTrackerQuest`
 (`000800` … `00081B:Shadow of Skyrim.esp`). Each has `Flags = 0` — not start-game enabled — so they
 are started by script only when a nemesis is actually assigned. A tracker is shut down at stage 200
@@ -207,14 +215,61 @@ prompt block already states.
 
 ## 9. Decorator reference
 
-All four are built into SkyrimNet; none requires an SKSE plugin.
+All five are built into SkyrimNet; none requires an SKSE plugin.
 
 | Decorator | Signature | Behaviour |
 |---|---|---|
 | `is_plugin_loaded` | `(pluginName: string) -> bool` | Case-insensitive load-order check |
-| `is_knocked_down` | `(actorUUID) -> bool` | Bleeding out or essential-down |
+| `is_knocked_down` | `(actorUUID) -> bool` | Knocked down in a bleedout or essential-down state |
+| `get_recent_events` | `(count, entityUUIDs) -> array` | Recent world events, optionally filtered to specific actors. Reads persisted event history |
 | `is_quest_active` | `(questId: number\|string) -> bool` | Quest active in the player's log |
 | `get_quest_stage` | `(questId: number\|string, onlyWhileActive: bool) -> int` | Stage number; -1 if not found, or if inactive and onlyWhileActive is true |
 
 Decorator names, signatures and error strings were read out of `SkyrimNet.dll` directly rather than
 from documentation, because a misspelled decorator is a silent no-op in a prompt.
+
+## 3.6 The signal that replaced the trackers
+
+**Persisted death event, read from event history.** `get_recent_events(count, entityUUIDs)`
+is a real SkyrimNet decorator (verified in `SkyrimNet.dll`: *"Get recent world events from
+the event history... Can optionally filter by entity UUID(s)"*, 1-2 arguments). Filtering by
+`player.UUID` returns the player's own events, and SkyrimNet writes a death event for the
+player on every defeat:
+
+    {"death_type":"killed","is_dead":true,"is_summoned":false,"killer":"Unknown","victim":"Aleam"}
+
+That row is persisted in the `events` table and, unlike the tracker quests, exists after
+*every* defeat. The template matches it on `e.type == "death"` and `e.data.victim == player.name`.
+
+**Why a time window.** The death event never expires, so an unbounded match would keep
+claiming a defeat the player suffered days ago. The template bounds it with
+`(gameTimeNumeric - e.gameTime) < 21600` - six game hours, deliberately matching Battle
+Summaries' own `game_hours: 6` setting so the two agree on what counts as recent.
+`gameTimeNumeric` is a global template variable injected by `PromptHostDefaults`, documented
+for exactly this comparison against `event.gameTime`.
+
+**Why `is_knocked_down` is kept.** During bleedout the death event has not been written yet
+(it is written at the moment of death, ~2 s after the knockdown), and after respawn the
+knockdown is long over. The two cover disjoint windows, so the template checks
+`is_knocked_down` first and falls back to the history read.
+
+**What this plugin does NOT do.** It does not claim SkyrimNet is blind to the defeat. The
+death event already reaches NPC prompts (verified: 15 renderings of
+`(death) Aleam: Aleam was killed by Unknown` in one session), and Battle Summaries already
+narrates the fight ("*Aleam was struck down by the second Wolf: collapsed, helpless and
+bleeding out, unable to fight, but survived*"). The gap this plugin fills is narrower and
+real: neither of those says the player woke **somewhere else** with their gear gone, which
+is the Shadow of Skyrim consequence.
+
+**Ruled out as signals** (all verified, do not re-investigate):
+- `_ShadowOfSkyrimQuest` (00080A) quest stages - the quest has **0 stages**.
+- `_ShadowOfSkyrimQuest` aliases - `Flags=0`, so it is not start-game-enabled and its aliases
+  are not a passive always-on signal; it never appeared in the log at all.
+- SOS player debuffs (`has_magic_effect`) - the MCM states *"When defeated by your Nemesis you
+  will receive a Debuff"*, so debuffs are nemesis-gated too. Zero SOS effects applied in the
+  whole tested session.
+- `_AssignEffectsQuest` (000814) - does start without a nemesis, but has **0 stages** and is
+  active for only ~24 s, far too narrow to be reliable.
+- `get_script_property` for SOS state flags - `abPlayerDefeated` / `abPlayerRevived` /
+  `akSavior` / `bRevivedByFollower` are function **locals**, not script properties.
+- SOS globals - the plugin ships **0 GLOB records**.

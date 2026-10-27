@@ -21,17 +21,19 @@ It adds one block to the speaking NPC's own prompt, covering two states:
 **The player is bleeding out right now.** NPCs are told the player is on the ground and cannot
 answer, and that the fight is not yet decided - whoever is still standing decides what happens next.
 
-**The party has lost.** NPCs are told the player was struck down, that what followed was not a
-victory, that gear or gold was taken, and that they should not pretend otherwise or invent a win.
+**The player was defeated.** NPCs are told the player was struck down, that what followed was not
+a victory, that gear or gold may have been taken, and that they should not pretend otherwise or
+invent a win.
 
-The block is standing state: it applies for as long as the defeat is unresolved, which is exactly
-how long the player really does carry it.
+The block is standing state: it applies for six game hours after the recorded death event, so it
+needs no trigger and cannot spam.
 
 ## What it deliberately does not do
 
 - It does not narrate, trigger dialogue, or make extra LLM calls. It is a prompt block, nothing more.
-- It does not claim the player was relocated *to a specific place*. It says either they were dragged
-  clear or they woke elsewhere, because that distinction is not reliably observable from a prompt.
+- It does not claim the player was relocated *to a specific place*. It says only that they woke
+  somewhere other than where they fell, because the destination is not reliably observable from a
+  prompt.
 - It does not name the nemesis. `get_quest_alias_actor` can read the alias, but calling it on an
   empty alias risks a template error, and a prompt that throws loses the whole block.
 
@@ -79,10 +81,12 @@ Three decorators, all built into SkyrimNet:
 |---|---|
 | `is_plugin_loaded("Shadow of Skyrim.esp")` | Keeps the whole file inert when Shadow of Skyrim is absent |
 | `is_knocked_down(player.UUID)` | True while an actor is bleeding out or in an essential-down state |
-| `is_quest_active("_<n>NemesisTrackerQuest")` | True while an unresolved nemesis exists - i.e. the party lost |
+| `get_recent_events(40, player.UUID)` | Reads the player's persisted death event from SkyrimNet's event history - written for every defeat, and it survives the respawn |
 
-The five tracker quests are Shadow of Skyrim's nemesis slots. Any one being active means a defeat
-is still outstanding.
+The five nemesis tracker quests are started by script only when a nemesis is assigned. Most defeats
+assign none, so they start no tracker at all - a solo defeat by two wolves, with no party present,
+started 0 of 5 - and that signal was therefore dropped. The persisted death event is the
+replacement, and a six-game-hour window keeps the claim recent.
 
 ## Licence
 

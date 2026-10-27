@@ -1,33 +1,41 @@
 {% if render_mode == "full" or render_mode == "thoughts" or render_mode == "transform" %}
-{# Shadow of Skyrim: what the speaker knows about the player's defeats.
-   SkyrimNet has no bleedout handling of its own. Without this block a party wipe is
-   invisible: the player vanishes mid-fight and comes back somewhere else with their
-   gear gone, while every NPC carries on as though nothing had happened.
-   Shadow of Skyrim is optional, so the plugin guard keeps this file inert without it.
-   This file ADDS a block; it replaces no SkyrimNet prompt.
+{# Shadow of Skyrim: what the speaker knows about the player's defeat.
+   SkyrimNet records the player's death as an ordinary death event, and Battle Summaries
+   narrates the fight. Neither says what Shadow of Skyrim did next: the player did not stay
+   dead, they woke somewhere else, and their gear is gone. That is the gap this block fills.
 
-   Defeat is read two ways, because the two disagree. get_quest_stage(..., false) reads
-   the quest's stage whether or not it counts as "active", which matters because SOS's
-   tracker quests carry Flags=0 and never appear in the journal. is_quest_active is kept
-   as a fallback in case the stage lookup cannot resolve the EditorID. A stage strictly
-   between 0 (never started) and 200 (shut down) means the defeat is still unanswered. #}
+   The signal is the persisted death event for the player, read from event history. It is
+   NOT the nemesis tracker quests: those are started by script only when a nemesis is
+   assigned, and a solo defeat by two wolves started none of them. Verified in game - a real
+   defeat started 0 of 5 nemesis trackers and 0 of 5 gear trackers. A death event, by
+   contrast, is written for every defeat and survives the respawn.
+
+   The 21600-second (6 game hour) window matches Battle Summaries' own game_hours setting,
+   so the two agree on what counts as recent. Without it the death event would sit in
+   history forever and this block would claim a defeat the player suffered days ago.
+
+   is_knocked_down covers the live moment, while the player is still on the ground. It is
+   checked first and separately, because during bleedout the death event has not been
+   written yet, and after respawn the knockdown is already over.
+
+   This file ADDS a block; it replaces no SkyrimNet prompt. It is inert without Shadow of Skyrim. #}
 {% if is_plugin_loaded("Shadow of Skyrim.esp") %}
+
+{% set wasDefeated = false %}
+{% for e in get_recent_events(40, player.UUID) %}
+{% if e.type == "death" and existsIn(e.data, "victim") and e.data.victim == player.name and (gameTimeNumeric - e.gameTime) < 21600 %}{% set wasDefeated = true %}{% endif %}
+{% endfor %}
 
 {% if is_knocked_down(player.UUID) %}
 **{{ player.name }} IS DOWN:**
 - {{ player.name }} has been struck down and is bleeding out on the ground right now - unable to act, unable to answer.
 - The fight is not decided yet. Whoever is still standing decides what happens next.
 {% else %}
-{% set n1 = get_quest_stage("_1NemesisTrackerQuest", false) %}
-{% set n2 = get_quest_stage("_2NemesisTrackerQuest", false) %}
-{% set n3 = get_quest_stage("_3NemesisTrackerQuest", false) %}
-{% set n4 = get_quest_stage("_4NemesisTrackerQuest", false) %}
-{% set n5 = get_quest_stage("_5NemesisTrackerQuest", false) %}
-{% if (n1 > 0 and n1 < 200) or (n2 > 0 and n2 < 200) or (n3 > 0 and n3 < 200) or (n4 > 0 and n4 < 200) or (n5 > 0 and n5 < 200) or is_quest_active("_1NemesisTrackerQuest") or is_quest_active("_2NemesisTrackerQuest") or is_quest_active("_3NemesisTrackerQuest") or is_quest_active("_4NemesisTrackerQuest") or is_quest_active("_5NemesisTrackerQuest") %}
+{% if wasDefeated %}
 **{{ player.name }} WAS DEFEATED:**
-- The party lost a fight. {{ player.name }} was struck down and did not fight their way out of it.
-- What followed was not a victory. Either {{ player.name }} was dragged clear by someone and has only just come round, or they woke somewhere else entirely - however far the victor carried them.
-- Gear, gold, or both were taken. {{ player.name }} is weaker for it, and the loss is still unanswered.
+- {{ player.name }} was struck down in a fight and did not win it. They are on their feet again, but not because they fought their way out.
+- Shadow of Skyrim does not let a defeat kill. {{ player.name }} woke somewhere other than where they fell - however far the victor carried them.
+- Gear, gold, or both may have been taken. If a nemesis claimed the victory, that creature is still out there wearing what it took.
 - {{ player.name }} knows this happened. Do not act as though they simply walked away from that fight, and do not invent a victory for them.
 {% endif %}
 {% endif %}
