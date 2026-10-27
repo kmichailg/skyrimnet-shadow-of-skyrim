@@ -1,0 +1,6 @@
+# SkyrimNet reads .prompt files as text; the first line is a render guard.
+# Never let a Windows checkout rewrite these line endings or add a BOM.
+* text=auto eol=lf
+*.prompt text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
