@@ -113,6 +113,17 @@ because it is a semantic state rather than a movement.
 
 The block ORs all five.
 
+### Two signals, because "active" is ambiguous
+
+`is_quest_active` is documented as "active in the player's quest log", and SkyrimNet's quest cache
+tracks `InLog` / `HasJournal` per quest — so a quest that is running but never enters the journal may
+never qualify as active. A live session logged `Cached 0 active quests`, which would make the
+defeat branch dead code if the active flag were the only signal. `get_quest_stage(editorID, false)`
+reads the stage regardless of active status, and the stage scale is unambiguous: 0 is never started
+and 200 is shut down, so `0 < stage < 200` means the defeat was recorded and is still unresolved. The
+two signals are OR'd, so neither hypothesis has to be right — if the journal-scoped reading fails, the
+stage reading still carries the block.
+
 ---
 
 ## 4. Why a prompt block, not a trigger
@@ -196,13 +207,14 @@ prompt block already states.
 
 ## 9. Decorator reference
 
-All three are built into SkyrimNet; none requires an SKSE plugin.
+All four are built into SkyrimNet; none requires an SKSE plugin.
 
 | Decorator | Signature | Behaviour |
 |---|---|---|
 | `is_plugin_loaded` | `(pluginName: string) -> bool` | Case-insensitive load-order check |
 | `is_knocked_down` | `(actorUUID) -> bool` | Bleeding out or essential-down |
 | `is_quest_active` | `(questId: number\|string) -> bool` | Quest active in the player's log |
+| `get_quest_stage` | `(questId: number\|string, onlyWhileActive: bool) -> int` | Stage number; -1 if not found, or if inactive and onlyWhileActive is true |
 
 Decorator names, signatures and error strings were read out of `SkyrimNet.dll` directly rather than
 from documentation, because a misspelled decorator is a silent no-op in a prompt.

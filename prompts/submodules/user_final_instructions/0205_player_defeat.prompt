@@ -4,7 +4,13 @@
    invisible: the player vanishes mid-fight and comes back somewhere else with their
    gear gone, while every NPC carries on as though nothing had happened.
    Shadow of Skyrim is optional, so the plugin guard keeps this file inert without it.
-   This file ADDS a block; it replaces no SkyrimNet prompt. #}
+   This file ADDS a block; it replaces no SkyrimNet prompt.
+
+   Defeat is read two ways, because the two disagree. get_quest_stage(..., false) reads
+   the quest's stage whether or not it counts as "active", which matters because SOS's
+   tracker quests carry Flags=0 and never appear in the journal. is_quest_active is kept
+   as a fallback in case the stage lookup cannot resolve the EditorID. A stage strictly
+   between 0 (never started) and 200 (shut down) means the defeat is still unanswered. #}
 {% if is_plugin_loaded("Shadow of Skyrim.esp") %}
 
 {% if is_knocked_down(player.UUID) %}
@@ -12,7 +18,12 @@
 - {{ player.name }} has been struck down and is bleeding out on the ground right now - unable to act, unable to answer.
 - The fight is not decided yet. Whoever is still standing decides what happens next.
 {% else %}
-{% if is_quest_active("_1NemesisTrackerQuest") or is_quest_active("_2NemesisTrackerQuest") or is_quest_active("_3NemesisTrackerQuest") or is_quest_active("_4NemesisTrackerQuest") or is_quest_active("_5NemesisTrackerQuest") %}
+{% set n1 = get_quest_stage("_1NemesisTrackerQuest", false) %}
+{% set n2 = get_quest_stage("_2NemesisTrackerQuest", false) %}
+{% set n3 = get_quest_stage("_3NemesisTrackerQuest", false) %}
+{% set n4 = get_quest_stage("_4NemesisTrackerQuest", false) %}
+{% set n5 = get_quest_stage("_5NemesisTrackerQuest", false) %}
+{% if (n1 > 0 and n1 < 200) or (n2 > 0 and n2 < 200) or (n3 > 0 and n3 < 200) or (n4 > 0 and n4 < 200) or (n5 > 0 and n5 < 200) or is_quest_active("_1NemesisTrackerQuest") or is_quest_active("_2NemesisTrackerQuest") or is_quest_active("_3NemesisTrackerQuest") or is_quest_active("_4NemesisTrackerQuest") or is_quest_active("_5NemesisTrackerQuest") %}
 **{{ player.name }} WAS DEFEATED:**
 - The party lost a fight. {{ player.name }} was struck down and did not fight their way out of it.
 - What followed was not a victory. Either {{ player.name }} was dragged clear by someone and has only just come round, or they woke somewhere else entirely - however far the victor carried them.

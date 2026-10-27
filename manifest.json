@@ -26,7 +26,7 @@
   "languages": [
     "en"
   ],
-  "version": "1.0.0",
-  "changelog": "Initial release. NPCs are told when the player has been struck down and is bleeding out, and when the party has lost a fight outright - so followers stop acting as though the player walked away from a defeat, and stop inventing a victory for them.",
+  "version": "1.0.1",
+  "changelog": "Detect a recorded defeat from the nemesis tracker quest's stage as well as its active flag, so the block still renders when the quest is not in the player's journal.",
   "min_skyrimnet_version": "0.25.0"
 }
