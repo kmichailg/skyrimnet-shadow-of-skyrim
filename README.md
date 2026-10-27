@@ -44,17 +44,22 @@ Nothing else. No SKSE plugin, no ESP of its own, no save data. Removing it leave
 
 ## Installation
 
-Copy `manifest.json` and `prompts/` into a mod folder, so the result is:
+A SkyrimNet external content layer lives inside SkyrimNet's content root and is named for its
+manifest `id`. So the result should be:
 
 ```
 <your mod>/
-├── manifest.json
-└── prompts/submodules/user_final_instructions/0205_player_defeat.prompt
+└── SKSE/Plugins/SkyrimNet/external/kmichailg.shadow-of-skyrim-defeat/
+    ├── manifest.json
+    └── prompts/submodules/user_final_instructions/0205_player_defeat.prompt
 ```
 
-That folder is a SkyrimNet *external* content layer. SkyrimNet discovers it on the next boot and
-registers it automatically; look for `newly registered external: kmichailg.shadow-of-skyrim-defeat`
-in `SkyrimNet.log`.
+The directory name must match the manifest `id` exactly — SkyrimNet ignores a store directory whose
+name is not its manifest id. Discovery only scans under `Data/SKSE/Plugins/SkyrimNet`, so a
+`manifest.json` at the mod folder's root is never seen.
+
+SkyrimNet registers the layer on the next boot; look for
+`newly registered external: kmichailg.shadow-of-skyrim-defeat` in `SkyrimNet.log`.
 
 Enable it after SkyrimNet in your mod manager.
 

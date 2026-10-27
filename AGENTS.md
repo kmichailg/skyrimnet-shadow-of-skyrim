@@ -64,14 +64,27 @@ an event, so it needs no cooldown and cannot spam.
 
 ## Local install
 
-A SkyrimNet *external* content layer is any mod folder containing `manifest.json` plus content
-directories at its root. Copy the repo to a mod folder, enable it after SkyrimNet, and boot.
-SkyrimNet discovers it automatically; look for
-`newly registered external: kmichailg.shadow-of-skyrim-defeat` in `SkyrimNet.log`.
+A SkyrimNet *external* content layer lives inside SkyrimNet's content root, in a directory named for
+its manifest `id`:
 
-Do **not** nest the content under `SKSE/Plugins/SkyrimNet/external/` yourself — that layout is for
-mods that ship their content inside a mod that already owns that tree. A plain mod folder at the
-root is the supported form.
+```
+<mod folder>/SKSE/Plugins/SkyrimNet/external/kmichailg.shadow-of-skyrim-defeat/
+├── manifest.json
+└── prompts/submodules/user_final_instructions/0205_player_defeat.prompt
+```
+
+The repo root holds the layer's *contents*, not the layer itself. Copy them into a directory named
+`kmichailg.shadow-of-skyrim-defeat` under `SKSE/Plugins/SkyrimNet/external/`.
+
+Two rules, both enforced by the engine:
+
+- The directory name must equal the manifest `id`. A mismatch is ignored with
+  `directory name is not its manifest id`.
+- The content must be under `Data/SKSE/Plugins/SkyrimNet`, because that is the only place discovery
+  scans. A `manifest.json` at the mod folder root deploys to `Data/manifest.json` and is never seen.
+
+Enable it after SkyrimNet and boot; look for
+`newly registered external: kmichailg.shadow-of-skyrim-defeat` in `SkyrimNet.log`.
 
 ## Publishing to the hub
 
