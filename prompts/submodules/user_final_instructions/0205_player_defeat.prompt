@@ -14,6 +14,12 @@
    so the two agree on what counts as recent. Without it the death event would sit in
    history forever and this block would claim a defeat the player suffered days ago.
 
+   The count is 200, not 40, because it is a RECENCY budget, not a match count: a busy
+   player generates roughly 30 events per game hour, so 40 would reach back only ~80
+   minutes and a defeat older than that would never be seen. 200 covers the full 6-hour
+   window with headroom. Measured against a real save: the death event sat 167 events deep
+   in the player's own history, far past a 40-event horizon.
+
    is_knocked_down covers the live moment, while the player is still on the ground. It is
    checked first and separately, because during bleedout the death event has not been
    written yet, and after respawn the knockdown is already over.
@@ -22,7 +28,7 @@
 {% if is_plugin_loaded("Shadow of Skyrim.esp") %}
 
 {% set wasDefeated = false %}
-{% for e in get_recent_events(40, player.UUID) %}
+{% for e in get_recent_events(200, player.UUID) %}
 {% if e.type == "death" and existsIn(e.data, "victim") and e.data.victim == player.name and (gameTimeNumeric - e.gameTime) < 21600 %}{% set wasDefeated = true %}{% endif %}
 {% endfor %}
 

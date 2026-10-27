@@ -246,7 +246,16 @@ claiming a defeat the player suffered days ago. The template bounds it with
 `(gameTimeNumeric - e.gameTime) < 21600` - six game hours, deliberately matching Battle
 Summaries' own `game_hours: 6` setting so the two agree on what counts as recent.
 `gameTimeNumeric` is a global template variable injected by `PromptHostDefaults`, documented
-for exactly this comparison against `event.gameTime`.
+**Why the count is 200 and not a small number.** `count` in `get_recent_events(count,
+entityUUIDs)` is a *recency budget*, not a match count - it decides how far back the scan
+reaches, and the type/victim test happens afterwards. An early build passed `40`, which at a
+measured ~30 events per game hour reaches back only **~1.35 game hours**; a defeat older than
+about 80 minutes was therefore invisible, and the 6-hour window above could never be satisfied.
+Measured against a real save, the player's death event sat **167 events deep** in the player's
+own history. `200` covers **~6.77 game hours** at that rate, so it spans the full 6-hour window
+with headroom. The lesson generalises: any `get_recent_events` call whose result is filtered
+*after* the fact must size its count to the time window it intends to cover, not to the number
+of matches it expects.
 
 **Why `is_knocked_down` is kept.** During bleedout the death event has not been written yet
 (it is written at the moment of death, ~2 s after the knockdown), and after respawn the
@@ -273,3 +282,6 @@ is the Shadow of Skyrim consequence.
 - `get_script_property` for SOS state flags - `abPlayerDefeated` / `abPlayerRevived` /
   `akSavior` / `bRevivedByFollower` are function **locals**, not script properties.
 - SOS globals - the plugin ships **0 GLOB records**.
+- **A small `count` in `get_recent_events`** - not a signal that failed, but a silent way to
+  break one: too small a count makes an older event unreachable regardless of how correct the
+  match predicate is. This is why the shipped count is sized to the window.

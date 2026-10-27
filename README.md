@@ -81,12 +81,12 @@ Three decorators, all built into SkyrimNet:
 |---|---|
 | `is_plugin_loaded("Shadow of Skyrim.esp")` | Keeps the whole file inert when Shadow of Skyrim is absent |
 | `is_knocked_down(player.UUID)` | True while an actor is bleeding out or in an essential-down state |
-| `get_recent_events(40, player.UUID)` | Reads the player's persisted death event from SkyrimNet's event history - written for every defeat, and it survives the respawn |
+| `get_recent_events(200, player.UUID)` | Reads the player's persisted death event from SkyrimNet's event history - written for every defeat, and it survives the respawn |
 
 The five nemesis tracker quests are started by script only when a nemesis is assigned. Most defeats
 assign none, so they start no tracker at all - a solo defeat by two wolves, with no party present,
 started 0 of 5 - and that signal was therefore dropped. The persisted death event is the
-replacement, and a six-game-hour window keeps the claim recent.
+replacement, and a six-game-hour window keeps the claim recent. The lookback is 200 events rather than a small number, because the count sets how far back the scan reaches - at roughly 30 events per game hour, 200 covers about 6.8 game hours and therefore spans the whole window.
 
 ## Licence
 

@@ -26,7 +26,7 @@
   "languages": [
     "en"
   ],
-  "version": "1.0.2",
-  "changelog": "Detect the defeat from the player's persisted death event in event history instead of the nemesis tracker quests. The trackers are started only when a nemesis is assigned, so most defeats - including a solo defeat by two wolves - rendered nothing at all. Wording no longer assumes a party was present.",
+  "version": "1.0.3",
+  "changelog": "Fix the event-history lookback: get_recent_events(40) reached back only ~80 minutes of play at a typical ~30 events per game hour, so a defeat older than that was never found and the six-hour window was unreachable. The count is now 200, which spans the full six-hour window.",
   "min_skyrimnet_version": "0.25.0"
 }
